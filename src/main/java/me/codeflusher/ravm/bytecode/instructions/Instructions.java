@@ -34,6 +34,7 @@ public enum Instructions implements IBytecode {
     JMP(1, 17, i->true, new JumpInstruction()),
     JIS(2, 18, integer -> integer == 0, new ComparativeJumpInstruction(-1)),
     JIL(2, 19, integer -> integer == 0, new ComparativeJumpInstruction(1)),
+    JIE(2, 20, integer -> integer == 0, new ComparativeJumpInstruction(0)),
 
     ;
     private static Instructions[] values = null;
