@@ -8,13 +8,13 @@ public class SplitTest {
                 inp 0x0000
                 inp 0x0001
                 out 0x0002
+                set 0x0001
                 run
-                jil 0x0FFF 0x0015
-                rd 0x0000
-                add 0x0001
-                mulv 0x00FA
+                ptr 0
+                addv 0x0000
+                mulv 0x0002
                 mov 0x0002
-                jmp 0x0008
+                jis 0x0FFF 0x0000
                 end
                 """);
         System.out.println(Arrays.toString(RedstoneAssemblyTranslator.translate(test)));

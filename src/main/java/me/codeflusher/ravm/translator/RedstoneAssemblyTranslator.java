@@ -3,7 +3,9 @@ package me.codeflusher.ravm.translator;
 import lombok.experimental.UtilityClass;
 import me.codeflusher.ravm.bytecode.instructions.Instructions;
 import me.codeflusher.ravm.data.IBasicException;
+import me.codeflusher.ravm.data.impl.SupportedBases;
 import me.codeflusher.ravm.translator.utils.TranslationUtils;
+import me.codeflusher.ravm.util.Utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,9 +42,11 @@ public class RedstoneAssemblyTranslator {
                 var base = TranslationUtils.getBase(currentSymbol);
                 if (currentSymbol.length()<=2){
                     data = Integer.parseInt(currentSymbol);
-                }else{
+                }else if ((base != SupportedBases.DECIMAL ) || Utils.getNthTopLeftChar(currentSymbol, 1) == 'd'){
 //                    System.out.println(base.getBase());
                     data = Integer.parseInt(currentSymbol.substring(2).toLowerCase(), base.getBase());
+                }else{
+                    data = Integer.parseInt(currentSymbol);
                 }
 
                 bytecodes.add(data);

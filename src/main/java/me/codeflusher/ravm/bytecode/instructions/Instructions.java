@@ -20,7 +20,6 @@ public enum Instructions implements IBytecode {
     MOV(1, 4,i->false, new MoveInstruction()),
     RD(1, 5,i->false, new ReadInstruction()),
     SET(1, 6,i->true, new SetInstruction()),
-
     ADD(1,7,i->false,new AddInstruction()),
     ADDV(1,8,i->true, new AddValueInstruction()),
     SUB(1,9,i->false, new SubstractInstruction()),
@@ -31,10 +30,11 @@ public enum Instructions implements IBytecode {
     DIVV(1,14,i->true, new DivideValueInstruction()),
     MOD(1,15,i->false,new ModInstruction()),
     MODV(1,16,i->true,new ModValueInstruction()),
-    JMP(1, 17, i->true, new JumpInstruction()),
-    JIS(2, 18, integer -> integer == 0, new ComparativeJumpInstruction(-1)),
-    JIL(2, 19, integer -> integer == 0, new ComparativeJumpInstruction(1)),
-    JIE(2, 20, integer -> integer == 0, new ComparativeJumpInstruction(0)),
+    PTR(1,17, i->true, new PointerInstruction()),
+    JMP(1, 18, i->true, new JumpInstruction()),
+    JIS(2, 19, integer -> integer == 0, new ComparativeJumpInstruction(-1)),
+    JIL(2, 20, integer -> integer == 0, new ComparativeJumpInstruction(1)),
+    JIE(2, 21, integer -> integer == 0, new ComparativeJumpInstruction(0)),
 
     ;
     private static Instructions[] values = null;

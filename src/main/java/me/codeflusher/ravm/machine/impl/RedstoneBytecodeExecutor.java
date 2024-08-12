@@ -1,5 +1,6 @@
 package me.codeflusher.ravm.machine.impl;
 
+import jdk.jshell.spi.ExecutionControl;
 import lombok.*;
 import me.codeflusher.ravm.bytecode.instructions.Instructions;
 import me.codeflusher.ravm.data.impl.IORegistryTypes;
@@ -27,33 +28,47 @@ public class RedstoneBytecodeExecutor implements RedstoneVMContext, RedstoneVM {
 
     public final int memoryBoundaries;
     public final int staticMemoryBoundaries;
+    public final int maxStack;
 
     @Getter
     private int[] memory;
+    @Getter
+    private int[] staticMemory;
 
     private List<Runnable> beforeRunErrands = new ArrayList<>();
 
-    public RedstoneBytecodeExecutor(int memoryBoundaries, int staticMemoryBoundaries) {
+    public RedstoneBytecodeExecutor(int memoryBoundaries, int staticMemoryBoundaries, int maxStack) {
         this.memoryBoundaries = memoryBoundaries;
         this.staticMemoryBoundaries = staticMemoryBoundaries;
+        this.maxStack = maxStack;
         memory = new int[memoryBoundaries];
+        staticMemory = new int[staticMemoryBoundaries];
+
     }
 
     private List<Integer> outputMemoryIndexes = new ArrayList<>();
     private List<Integer> inputMemoryIndexes = new ArrayList<>();
+    private List<Integer> memoryPointers = new ArrayList<>();
 
     private void processor(Function<Integer, Boolean> booleanPredicate){
+        preRegisterPointers();
         beforeRunErrands.forEach(Runnable::run);
         int currendInstruction = memory[memoryCursor];
         int awaitsArguments = 0;
         int[] argsCollector = new int[0];
         int reqArgs = 0;
         Instructions instruction = null;
+        int stack = 0;
         while(booleanPredicate.apply(currendInstruction)){
+            stack++;
+            if (stack > maxStack){
+                throw new VMStackOverflow("Stack overflow exception");
+            }
+//            System.out.println("Main index " + mainIndex);
 //            if (VMUtils.isInstruction(currendInstruction))
 //                System.out.println(Instructions.getValues()[VMUtils.getInstructionID(currendInstruction)].name());
 //            else
-//                System.out.println(currendInstruction);
+//                System.out.println("Value: " + currendInstruction);
             memoryCursor++;
             if(awaitsArguments > 0 && VMUtils.isInstruction(currendInstruction)){
                 throw new ArgumentExpected("Argument expected after instruction");
@@ -63,13 +78,8 @@ public class RedstoneBytecodeExecutor implements RedstoneVMContext, RedstoneVM {
                 awaitsArguments --;
             }
             if (reqArgs > 0 && awaitsArguments == 0){
-//                System.out.println("Running task! " + memoryCursor);
                 instruction.getExecutor().run(argsCollector, this);
                 reqArgs = 0;
-//                currendInstruction = memory[memoryCursor];
-//                continue;
-//                reqArgs = 0;
-//                awaitsArguments = 0;
             }
             if (VMUtils.isInstruction(currendInstruction)){
                 instruction = Instructions.getValues()[VMUtils.getInstructionID(currendInstruction)];
@@ -110,6 +120,33 @@ public class RedstoneBytecodeExecutor implements RedstoneVMContext, RedstoneVM {
         run();
     }
 
+    private void preRegisterPointers(){
+        for (int i = 0; i < memory.length; i++) {
+            if(memory[i] != Instructions.PTR.getInstructionCode()){
+                continue;
+            }
+//            System.out.println("MEMORY INDEX: %d, current slot: %d, next slot: %d".formatted(i, memory[i], memory[i+1]) );
+//            Instructions.PTR.getExecutor().run(new int[]{memory[i+1]}, this);
+            this.registerPointer(i, memory[i+1]);
+        }
+        System.out.println(memoryPointers);
+    }
+
+    @Override
+    public int getStaticMemoryValue(int address) {
+        if (staticMemoryBoundaries < address){
+            throw new UnallocatedMemoryAccess("Program tried to ask for unallocated memory");
+        }
+        return memory[address];
+    }
+
+    @Override
+    public void setStaticMemoryValue(int address, int value) {
+        if (staticMemoryBoundaries < address){
+            throw new UnallocatedMemoryAccess("Program tried to ask for unallocated memory");
+        }
+        memory[address] = value;
+    }
 
     @Override
     public int getMemoryValue(int address) throws VMException {
@@ -144,6 +181,19 @@ public class RedstoneBytecodeExecutor implements RedstoneVMContext, RedstoneVM {
             case OUTPUT -> outputMemoryIndexes.add(id, memoryAddress);
             case null, default -> throw new IllegalArgumentException("Illegal Argument for binding registry provided");
         }
+    }
+
+    @Override
+    public int getMemoryPointer(int id) throws VMException {
+        if (memoryPointers.size() <= id){
+            throw new NoMemoryPointerRegistryFound("Requiered id (%d) is larger than registered pointers (%d)".formatted(id, memoryPointers.size()));
+        }
+        return memoryPointers.get(id);
+    }
+
+    @Override
+    public void registerPointer(int memoryAddress, int id) throws VMException {
+        memoryPointers.add(id,memoryAddress);
     }
 
     @Override
