@@ -13,36 +13,41 @@ import java.util.function.Function;
 
 @AllArgsConstructor
 public enum Instructions implements IBytecode {
-    RUN( 0,0,i->false, null),
-    END( 0,1,i->false, null),
-    INP(1, 2,i->false, new RegistryBytecodeExecutor(IORegistryTypes.INPUT)),
-    OUT(1, 3,i->false, new RegistryBytecodeExecutor(IORegistryTypes.OUTPUT)),
-    MOV(1, 4,i->false, new MoveInstruction()),
-    RD(1, 5,i->false, new ReadInstruction()),
-    SET(1, 6,i->true, new SetInstruction()),
-    ADD(1,7,i->false,new AddInstruction()),
-    ADDV(1,8,i->true, new AddValueInstruction()),
-    SUB(1,9,i->false, new SubstractInstruction()),
-    SUBV(1,10,i->true,new SubstractValueInstruction()),
-    MUL(1,11,i->false, new MultiplyInstruction()),
-    MULV(1,12,i->true,new MultiplyValueInstruction()),
-    DIV(1,13,i->false, new DivideInstruction()),
-    DIVV(1,14,i->true, new DivideValueInstruction()),
-    MOD(1,15,i->false,new ModInstruction()),
-    MODV(1,16,i->true,new ModValueInstruction()),
-    PTR(1,17, i->true, new PointerInstruction()),
-    JMP(1, 18, i->true, new JumpInstruction()),
-    JIS(2, 19, integer -> integer == 0, new ComparativeJumpInstruction(-1)),
-    JIL(2, 20, integer -> integer == 0, new ComparativeJumpInstruction(1)),
-    JIE(2, 21, integer -> integer == 0, new ComparativeJumpInstruction(0)),
-
+    RUN( 0,0,i->false, null, false),
+    END( 0,1,i->false, null, false),
+    INP(1, 2,i->false, new RegistryBytecodeExecutor(IORegistryTypes.INPUT), false),
+    OUT(1, 3,i->false, new RegistryBytecodeExecutor(IORegistryTypes.OUTPUT),false),
+    MOV(1, 4,i->false, new MoveInstruction(),false),
+    RD(1, 5,i->false, new ReadInstruction(),false),
+    SET(1, 6,i->true, new SetInstruction(),false),
+    ADD(1,7,i->false,new AddInstruction(),false),
+    ADDV(1,8,i->true, new AddValueInstruction(),false),
+    SUB(1,9,i->false, new SubstractInstruction(),false),
+    SUBV(1,10,i->true,new SubstractValueInstruction(),false),
+    MUL(1,11,i->false, new MultiplyInstruction(),false),
+    MULV(1,12,i->true,new MultiplyValueInstruction(),false),
+    DIV(1,13,i->false, new DivideInstruction(),false),
+    DIVV(1,14,i->true, new DivideValueInstruction(),false),
+    MOD(1,15,i->false,new ModInstruction(),false),
+    MODV(1,16,i->true,new ModValueInstruction(),false),
+    PTR(1,17, i->true, new PointerInstruction(),true),
+    SAY(1, 18, i->true, new SayInstruction(),false),
+    JMP(1, 19, i->true, new JumpInstruction(),false),
+    JIS(2, 20, integer -> integer == 0, new ComparativeJumpInstruction(-1),false),
+    JIL(2, 21, integer -> integer == 0, new ComparativeJumpInstruction(1),false),
+    JIE(2, 22, integer -> integer == 0, new ComparativeJumpInstruction(0),false),
     ;
+    private static int instructions = 0;
+
     private static Instructions[] values = null;
     private final int instructionArgs;
     private final int instructionID;
     @Getter
     private final Function<Integer, Boolean> valueOperation;
     private final BytecodeExecutor executor;
+
+    @Getter
+    private final boolean compileOnly;
 
     @Override
     public String getInstructionName() {
@@ -57,7 +62,6 @@ public enum Instructions implements IBytecode {
     @Override
     public int getInstructionCode() {
         return 32768 + 256 * instructionArgs + instructionID;
-
     }
 
     @Override

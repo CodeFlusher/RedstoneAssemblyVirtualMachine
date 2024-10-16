@@ -19,10 +19,13 @@ public class ExecutorTest {
                 mulv 0x00FF
                 mov 0x0002
                 jis 0x0FFF 0
+                say 0x0001
                 jmp 2
                 ptr 1
+                say 0x0002
                 end
                 ptr 2
+                say 0x0005
                 mov 0x0005
                 set 1984
                 mov 0x0006
@@ -31,8 +34,12 @@ public class ExecutorTest {
                 """;
         var vm = new RedstoneBytecodeExecutor(80, 0, 128);
 //        vm.complie(test);
-
         vm.complile(test);
+
+        System.out.println(vm.getMainIndex());
+        System.out.println(Arrays.toString(vm.getMemory()));
+        System.out.println(Arrays.toString(Decompiler.decompile(vm.getMemory())));
+
         vm.setInputBinding(0, 2);
         vm.setInputBinding(1, 15);
         vm.run();
@@ -40,5 +47,6 @@ public class ExecutorTest {
         System.out.println(vm.getMainIndex());
         System.out.println(Arrays.toString(vm.getMemory()));
         System.out.println(Arrays.toString(Decompiler.decompile(vm.getMemory())));
+        System.out.println(vm.getMessages());
     }
 }

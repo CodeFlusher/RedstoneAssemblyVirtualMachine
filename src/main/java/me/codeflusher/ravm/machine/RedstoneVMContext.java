@@ -4,6 +4,8 @@ import me.codeflusher.ravm.data.impl.IORegistryTypes;
 import me.codeflusher.ravm.machine.exception.UnallocatedMemoryAccess;
 import me.codeflusher.ravm.machine.exception.VMException;
 
+import java.util.List;
+
 public interface RedstoneVMContext {
 
     int getMainIndex();
@@ -24,4 +26,7 @@ public interface RedstoneVMContext {
 
     int getMemoryCursor();
     void setMemoryCursor(int address);
+
+    void pushMessage(Object object);
+    List<Object> getMessages();
 }
